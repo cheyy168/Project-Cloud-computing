@@ -1,25 +1,42 @@
-name: Deploy to S3
+name: Deploy Static Site to S3
 
 on:
   push:
-    branches:
-      - main  # or change to your default branch
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Project-Cloud-computing/app
 
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Sync files to S3
-      run: |
-        aws s3 sync ./app s3://${{ secrets.S3_BUCKET_NAME }} --delete
+      - name: Verify directory structure
+        run: |
+          ls -la
+          echo "Current path: $(pwd)"
+
+      - name: Sync all website content
+        run: |
+          aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
+
+      - name: Move index.html to root if needed
+        run: |
+          aws s3 cp index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
+            --content-type "text/html" \
+            --acl public-read
+
+      - name: Verify S3 upload
+        run: |
+          aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
