@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. Configure AWS
+      # 2. Configure AW
       - name: AWS Auth
         uses: aws-actions/configure-aws-credentials@v2
         with:
