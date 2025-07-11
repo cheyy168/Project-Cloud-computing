@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Project-Cloud-computing/app
+        working-directory: app
 
     steps:
       - name: Checkout code
