@@ -1,61 +1,25 @@
-name: Deploy Static Site to S3
+name: Deploy to S3
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  # or change to your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Project-Cloud-computing
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout source code
+      uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Verify directory structure
-        run: |
-          ls -la
-          echo "Current path: $(pwd)"
-          echo "Contents of Project-Cloud-computing:"
-          ls -la Project-Cloud-computing/
-
-      - name: Sync HTML files from js folder
-        run: |
-          aws s3 sync ./js s3://${{ secrets.AWS_S3_BUCKET }} \
-            --exclude "*" \
-            --include "*.html" \
-            --content-type "text/html" \
-            --acl public-read
-          
-          # Move index.html to root
-          aws s3 cp ./js/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
-            --content-type "text/html" \
-            --acl public-read
-
-      - name: Sync CSS files
-        run: |
-          aws s3 sync ./css s3://${{ secrets.AWS_S3_BUCKET }}/css \
-            --content-type "text/css" \
-            --acl public-read
-
-      - name: Sync images
-        run: |
-          aws s3 sync ./images s3://${{ secrets.AWS_S3_BUCKET }}/images \
-            --acl public-read
-
-      - name: Sync root files
-        run: |
-          aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
-            --acl public-read
-
-      - name: Verify S3 upload
-        run: |
-          aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
+    - name: Sync files to S3
+      run: |
+        aws s3 sync ./app s3://${{ secrets.S3_BUCKET_NAME }} --delete
