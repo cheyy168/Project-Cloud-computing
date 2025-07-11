@@ -17,40 +17,31 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Debug directory structure
+      - name: Verify directory structure
         run: |
           echo "Current path: $(pwd)"
           ls -la
-          echo "Contents:"
-          ls -la Project-Cloud-computing/
-          ls -la Project-Cloud-computing/js/
+          echo "JS files:"
+          ls -la js/
 
-      - name: Sync files
+      - name: Sync HTML files
         run: |
-          cd Project-Cloud-computing || exit 1
-          echo "Current path after cd: $(pwd)"
-          
-          # Sync HTML files from js folder to root
           aws s3 sync ./js s3://${{ secrets.AWS_S3_BUCKET }} \
             --exclude "*" \
             --include "*.html" \
             --content-type "text/html" \
             --acl public-read
 
-          # Sync CSS files
+      - name: Sync CSS files
+        run: |
           aws s3 sync ./css s3://${{ secrets.AWS_S3_BUCKET }}/css \
             --content-type "text/css" \
             --acl public-read
 
-          # Sync images
+      - name: Sync images
+        run: |
           aws s3 sync ./images s3://${{ secrets.AWS_S3_BUCKET }}/images \
             --acl public-read
-
-          # Sync root files
-          if [ -f "./README.md" ]; then
-            aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
-              --acl public-read
-          fi
 
       - name: Verify upload
         run: |
