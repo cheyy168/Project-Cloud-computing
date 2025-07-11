@@ -1,0 +1,46 @@
+name: Deploy to S3
+on:
+  push:
+    branches: [ main ]  # Runs on pushes to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout code
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2. Configure AWS
+      - name: AWS Auth
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 3. Upload files with correct content types
+      - name: Sync HTML files
+        run: |
+          aws s3 sync ./Project-Cloud-computing s3://${{ secrets.AWS_S3_BUCKET }} \
+            --exclude "*" \
+            --include "*.html" \
+            --content-type "text/html" \
+            --acl public-read
+
+      - name: Sync CSS files
+        run: |
+          aws s3 sync ./Project-Cloud-computing/css s3://${{ secrets.AWS_S3_BUCKET }}/css \
+            --content-type "text/css" \
+            --acl public-read
+
+      - name: Sync JS files
+        run: |
+          aws s3 sync ./Project-Cloud-computing/js s3://${{ secrets.AWS_S3_BUCKET }}/js \
+            --content-type "application/javascript" \
+            --acl public-read
+
+      - name: Sync images
+        run: |
+          aws s3 sync ./Project-Cloud-computing/images s3://${{ secrets.AWS_S3_BUCKET }}/images \
+            --acl public-read
