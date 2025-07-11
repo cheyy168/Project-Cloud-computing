@@ -17,53 +17,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Verify directory structure
-        run: |
-          echo "Current path: $(pwd)"
-          ls -la
-          echo "HTML files:"
-          ls -la js/*.html
-          echo "CSS files:"
-          ls -la css/
-          echo "Images:"
-          ls -la images/
-
       - name: Sync HTML files
         run: |
-          # Sync all HTML files to root
           aws s3 sync ./js s3://${{ secrets.AWS_S3_BUCKET }} \
             --exclude "*" \
             --include "*.html" \
             --content-type "text/html" \
             --acl public-read
 
-          # Ensure index.html is at root
-          aws s3 cp ./js/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
-            --content-type "text/html" \
-            --acl public-read
-
-      - name: Sync JavaScript
+      - name: Sync CSS files
         run: |
-          aws s3 cp ./js/script.js s3://${{ secrets.AWS_S3_BUCKET }}/js/script.js \
-            --content-type "application/javascript" \
-            --acl public-read
-
-      - name: Sync CSS
-        run: |
-          aws s3 cp ./css/styles.css s3://${{ secrets.AWS_S3_BUCKET }}/css/styles.css \
+          aws s3 sync ./css s3://${{ secrets.AWS_S3_BUCKET }}/css \
             --content-type "text/css" \
             --acl public-read
 
       - name: Sync images
         run: |
-          aws s3 cp ./images/Logo.jpg s3://${{ secrets.AWS_S3_BUCKET }}/images/Logo.jpg \
+          aws s3 sync ./images s3://${{ secrets.AWS_S3_BUCKET }}/images \
             --acl public-read
 
       - name: Sync root files
         run: |
           aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
             --acl public-read
-
-      - name: Verify S3 upload
-        run: |
-          aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
