@@ -6,9 +6,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Project-Cloud-computing
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -20,42 +17,41 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Verify directory structure
+      - name: Debug directory structure
         run: |
-          ls -la
           echo "Current path: $(pwd)"
-          echo "Contents of Project-Cloud-computing:"
+          ls -la
+          echo "Contents:"
           ls -la Project-Cloud-computing/
+          ls -la Project-Cloud-computing/js/
 
-      - name: Sync HTML files from js folder
+      - name: Sync files
         run: |
+          cd Project-Cloud-computing || exit 1
+          echo "Current path after cd: $(pwd)"
+          
+          # Sync HTML files from js folder to root
           aws s3 sync ./js s3://${{ secrets.AWS_S3_BUCKET }} \
             --exclude "*" \
             --include "*.html" \
             --content-type "text/html" \
             --acl public-read
-          
-          # Move index.html to root
-          aws s3 cp ./js/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
-            --content-type "text/html" \
-            --acl public-read
 
-      - name: Sync CSS files
-        run: |
+          # Sync CSS files
           aws s3 sync ./css s3://${{ secrets.AWS_S3_BUCKET }}/css \
             --content-type "text/css" \
             --acl public-read
 
-      - name: Sync images
-        run: |
+          # Sync images
           aws s3 sync ./images s3://${{ secrets.AWS_S3_BUCKET }}/images \
             --acl public-read
 
-      - name: Sync root files
-        run: |
-          aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
-            --acl public-read
+          # Sync root files
+          if [ -f "./README.md" ]; then
+            aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
+              --acl public-read
+          fi
 
-      - name: Verify S3 upload
+      - name: Verify upload
         run: |
           aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
