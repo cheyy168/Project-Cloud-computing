@@ -6,6 +6,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Project-Cloud-computing
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -17,11 +20,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Sync HTML files
+      - name: Verify directory structure
+        run: |
+          ls -la
+          echo "Current path: $(pwd)"
+          echo "Contents of Project-Cloud-computing:"
+          ls -la Project-Cloud-computing/
+
+      - name: Sync HTML files from js folder
         run: |
           aws s3 sync ./js s3://${{ secrets.AWS_S3_BUCKET }} \
             --exclude "*" \
             --include "*.html" \
+            --content-type "text/html" \
+            --acl public-read
+          
+          # Move index.html to root
+          aws s3 cp ./js/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
             --content-type "text/html" \
             --acl public-read
 
@@ -40,3 +55,7 @@ jobs:
         run: |
           aws s3 cp ./README.md s3://${{ secrets.AWS_S3_BUCKET }}/README.md \
             --acl public-read
+
+      - name: Verify S3 upload
+        run: |
+          aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
