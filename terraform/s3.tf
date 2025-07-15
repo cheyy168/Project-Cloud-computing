@@ -68,4 +68,3 @@ resource "aws_s3_bucket_policy" "static_assets" {
     aws_s3_bucket_public_access_block.static_assets
   ]
 }
-

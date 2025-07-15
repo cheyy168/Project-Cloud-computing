@@ -29,7 +29,7 @@ resource "aws_security_group" "web" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+  
   tags = merge(local.common_tags, {
     Name = "${var.project_name}-web-sg"
   })

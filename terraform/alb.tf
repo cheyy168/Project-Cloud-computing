@@ -19,12 +19,13 @@ resource "aws_lb_target_group" "web" {
   vpc_id   = aws_vpc.main.id
 
   health_check {
-    path                = "/"
+    path                = "/index.html"
     protocol            = "HTTP"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
+    matcher             = "200"
   }
 
   tags = merge(local.common_tags, {
@@ -46,6 +47,6 @@ resource "aws_lb_listener" "web" {
 
 # Attach Auto Scaling Group to Target Group
 resource "aws_autoscaling_attachment" "web" {
-  autoscaling_group_name = aws_autoscaling_group.web.id
-  lb_target_group_arn    = aws_lb_target_group.web.arn # <-- UPDATED
+  autoscaling_group_name = aws_autoscaling_group.web.name
+  lb_target_group_arn    = aws_lb_target_group.web.arn
 }
