@@ -1,23 +1,17 @@
-name: CI/CD Pipeline for S3 + EC2 Website
+name: Deploy Static Site to S3
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'app/**'
-      - 'terraform/ec2.tf'
-      - 'terraform/*.tfvars'
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     defaults:
       run:
         working-directory: app
 
     steps:
-      # STAGE 1: SETUP
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -28,25 +22,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # STAGE 2: S3 DEPLOYMENT
-      - name: Sync static content to S3
+      - name: Verify directory structure
         run: |
-          aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} \
-            --delete \
-            --acl public-read \
-            --exclude ".git/*" \
-            --exclude ".terraform/*"
+          ls -la
+          echo "Current path: $(pwd)"
 
-          # Set proper content types in one command
-          aws s3 cp s3://${{ secrets.AWS_S3_BUCKET }}/ s3://${{ secrets.AWS_S3_BUCKET }}/ \
-            --recursive \
-            --exclude "*" \
-            --include "*.html" --content-type "text/html" \
-            --include "*.css" --content-type "text/css" \
-            --include "*.js" --content-type "application/javascript" \
-            --metadata-directive REPLACE
+      - name: Sync all website content
+        run: |
+          aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
 
-      # STAGE 3: EC2 DEPLOYMENT
+      - name: Move index.html to root if needed
+        run: |
+          aws s3 cp index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
+            --content-type "text/html" \
+            --acl public-read
+
+      - name: Verify S3 upload
+        run: |
+          aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
+ # STAGE 3: EC2 DEPLOYMENT
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
