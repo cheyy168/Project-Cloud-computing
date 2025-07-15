@@ -31,11 +31,6 @@ jobs:
         run: |
           aws s3 sync . s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
 
-      - name: Move index.html to root if needed
-        run: |
-          aws s3 cp index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
-            --content-type "text/html" \
-            --acl public-read
 
       - name: Verify S3 upload
         run: |
