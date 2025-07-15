@@ -37,7 +37,7 @@ jobs:
             --exclude ".git/*" \
             --exclude ".terraform/*"
 
-          # Set proper content types
+          # Set proper content types in one command
           aws s3 cp s3://${{ secrets.AWS_S3_BUCKET }}/ s3://${{ secrets.AWS_S3_BUCKET }}/ \
             --recursive \
             --exclude "*" \
@@ -54,15 +54,22 @@ jobs:
 
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
 
       - name: Terraform Plan
         working-directory: terraform
-        run: terraform plan -var="s3_bucket_name=${{ secrets.AWS_S3_BUCKET }}"
+        run: |
+          terraform plan \
+            -var="s3_bucket_name=${{ secrets.AWS_S3_BUCKET }}" \
+            -out=tfplan
 
       - name: Terraform Apply
         working-directory: terraform
-        run: terraform apply -auto-approve -var="s3_bucket_name=${{ secrets.AWS_S3_BUCKET }}"
+        run: terraform apply -input=false -auto-approve tfplan
 
       # STAGE 4: POST-DEPLOYMENT
       - name: Refresh EC2 instances
@@ -71,22 +78,36 @@ jobs:
             --query "AutoScalingGroups[?Tags[?Key=='Name' && contains(Value, 'web-asg')]].AutoScalingGroupName" \
             --output text)
           
-          aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name $ASG_NAME \
-            --preferences '{
-              "InstanceWarmup": 30,
-              "MinHealthyPercentage": 90,
-              "SkipMatching": false
-            }'
+          if [ -n "$ASG_NAME" ]; then
+            echo "Starting instance refresh for ASG: $ASG_NAME"
+            aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --preferences '{
+                "InstanceWarmup": 30,
+                "MinHealthyPercentage": 90,
+                "SkipMatching": false
+              }'
+          else
+            echo "No ASG found matching the pattern"
+            exit 1
+          fi
 
       - name: Verify deployment
         run: |
-          # Verify S3
+          # Verify S3 content
+          echo "S3 Bucket Contents:"
           aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive --human-readable
           
-          # Verify EC2
+          # Verify ALB health
           ALB_DNS=$(aws elbv2 describe-load-balancers \
             --query "LoadBalancers[?contains(LoadBalancerName, 'web-alb')].DNSName" \
             --output text)
+          
+          if [ -z "$ALB_DNS" ]; then
+            echo "No ALB found"
+            exit 1
+          fi
+          
           echo "Website URL: http://$ALB_DNS"
-          curl -I http://$ALB_DNS
+          echo "Testing connection..."
+          curl -sSfI http://$ALB_DNS -o /dev/null -w "HTTP Status: %{http_code}\n"
