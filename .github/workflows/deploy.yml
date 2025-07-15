@@ -42,6 +42,6 @@ jobs:
           aws s3 ls s3://${{ secrets.AWS_S3_BUCKET }} --recursive
       - name: Move index.html to root if needed
         run: |
-          aws s3 cp app/index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
+          aws s3 cp index.html s3://${{ secrets.AWS_S3_BUCKET }}/index.html \
             --content-type "text/html" \
             --acl public-read
