@@ -4,7 +4,7 @@
 variable "region" {
   description = "AWS region where resources will be deployed"
   type        = string
-  default     = "us-west-2" # ✅ Updated to match actual resource location
+  default     = "us-west-2"
 
   validation {
     condition     = contains(["us-east-1", "us-west-2", "eu-west-1"], var.region)
@@ -57,7 +57,7 @@ variable "public_subnets" {
   default = {
     public_subnet_1 = {
       cidr_block = "10.0.1.0/24"
-      az         = "us-west-2a" # ✅ updated to match region
+      az         = "us-west-2a"
     }
     public_subnet_2 = {
       cidr_block = "10.0.2.0/24"
@@ -78,41 +78,40 @@ variable "instance_type" {
   }
 }
 
+variable "min_size" {
+  description = "Minimum number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.min_size >= 1 && var.min_size <= 10
+    error_message = "Must be between 1 and 10."
+  }
+}
+
 variable "max_size" {
-  description = "Maximum number of instances in ASG"
+  description = "Maximum number of instances in the Auto Scaling Group"
   type        = number
   default     = 4
 
   validation {
     condition     = var.max_size >= 1 && var.max_size <= 10
-    error_message = "ASG max_size must be between 1 and 10."
-  }
-}
-
-variable "min_size" {
-  description = "Minimum number of instances in ASG"
-  type        = number
-  default     = 2
-
-  validation {
-    condition     = var.min_size >= 1 && var.min_size <= 5
-    error_message = "ASG min_size must be between 1 and 5."
+    error_message = "Must be between 1 and 10."
   }
 }
 
 variable "desired_capacity" {
-  description = "Desired number of instances in ASG"
+  description = "Desired number of instances in the Auto Scaling Group"
   type        = number
   default     = 2
 
   validation {
     condition     = var.desired_capacity >= 1 && var.desired_capacity <= 10
-    error_message = "ASG desired_capacity must be between 1 and 10."
+    error_message = "Must be between 1 and 10."
   }
 }
 
 ### Common Tags
-# Use as `var.common_tags` if you're not using locals, otherwise convert to `locals.tf`
 variable "common_tags" {
   description = "Common tags to be applied to all resources"
   type        = map(string)
@@ -122,4 +121,10 @@ variable "common_tags" {
     Terraform   = "true"
     Owner       = "devops-team"
   }
+}
+
+### S3 Configuration
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket for static assets"
+  type        = string
 }
