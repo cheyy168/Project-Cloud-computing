@@ -78,36 +78,36 @@ variable "instance_type" {
   }
 }
 
-variable "min_size" {
-  description = "Minimum number of instances in the Auto Scaling Group"
-  type        = number
-  default     = 2
-
-  validation {
-    condition     = var.min_size >= 1 && var.min_size <= 10
-    error_message = "Must be between 1 and 10."
-  }
-}
-
 variable "max_size" {
-  description = "Maximum number of instances in the Auto Scaling Group"
+  description = "Maximum number of instances in ASG"
   type        = number
   default     = 4
 
   validation {
-    condition     = var.max_size >= 1 && var.max_size <= 10 && var.max_size >= var.min_size
-    error_message = "Must be between 1-10 and >= min_size."
+    condition     = var.max_size >= 1 && var.max_size <= 10
+    error_message = "ASG max_size must be between 1 and 10."
   }
 }
 
-variable "desired_capacity" {
-  description = "Desired number of instances in the Auto Scaling Group"
+variable "min_size" {
+  description = "Minimum number of instances in ASG"
   type        = number
   default     = 2
 
   validation {
-    condition     = var.desired_capacity >= var.min_size && var.desired_capacity <= var.max_size
-    error_message = "Must be between min_size and max_size."
+    condition     = var.min_size >= 1 && var.min_size <= 5
+    error_message = "ASG min_size must be between 1 and 5."
+  }
+}
+
+variable "desired_capacity" {
+  description = "Desired number of instances in ASG"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.desired_capacity >= 1 && var.desired_capacity <= 10
+    error_message = "ASG desired_capacity must be between 1 and 10."
   }
 }
 
