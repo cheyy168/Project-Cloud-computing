@@ -1,4 +1,4 @@
-# variables.tf - Enhanced with validation, consistency, and west region support
+# variables.tf - Fixed validation rules
 
 ### AWS Configuration
 variable "region" {
@@ -84,8 +84,8 @@ variable "min_size" {
   default     = 2
 
   validation {
-    condition     = var.min_size >= 1 && var.min_size <= 10
-    error_message = "Must be between 1 and 10."
+    condition     = var.min_size >= 1 && var.min_size <= 5
+    error_message = "Must be between 1 and 5."
   }
 }
 
