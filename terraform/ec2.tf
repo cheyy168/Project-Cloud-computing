@@ -33,7 +33,8 @@ resource "aws_launch_template" "web" {
               yum install -y httpd
               systemctl start httpd
               systemctl enable httpd
-              echo "<h1>Cyber Security Trends 2025</h1>" > /var/www/html/index.html
+              echo "<h1>Cyber Security Trends 2025
+              s3://cyber-trends-static-assets-dev-007536ca/index.html</h1>" > /var/www/html/index.html
               EOF
   )
 
