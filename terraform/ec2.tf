@@ -40,6 +40,7 @@ resource "aws_launch_template" "web" {
                   <meta http-equiv="refresh" content="0; url=https://cyber-trends-static-assets-dev-007536ca.s3.us-west-2.amazonaws.com/index.html">
                 </head>
                 <body>
+  
                   <p>Redirecting to Cyber Security Trends...</p>
                 </body>
               </html>

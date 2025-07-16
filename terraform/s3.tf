@@ -16,7 +16,7 @@ resource "aws_s3_bucket" "static_assets" {
   }
 }
 
-# ✅ Website hosting configuration
+# Website hosting configuration
 resource "aws_s3_bucket_website_configuration" "static_assets" {
   bucket = aws_s3_bucket.static_assets.id
 

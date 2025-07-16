@@ -56,7 +56,7 @@ resource "aws_route_table" "public" {
 resource "aws_route_table_association" "public" {
   for_each = aws_subnet.public
 
-  subnet_id      = aws_subnet.public[each.key].id # ✅ Fixed: explicit and correct reference
+  subnet_id      = aws_subnet.public[each.key].id 
   route_table_id = aws_route_table.public.id
 
   depends_on = [
