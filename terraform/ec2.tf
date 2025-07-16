@@ -29,22 +29,25 @@ resource "aws_launch_template" "web" {
   user_data = base64encode(<<-EOF
               #!/bin/bash
               yum update -y
-              yum install -y httpd awscli
+              yum install -y httpd
               systemctl start httpd
               systemctl enable httpd
               
-              # Create web directory
-              mkdir -p /var/www/html
+              # Create simple HTML redirect page
+              cat > /var/www/html/index.html <<EOL
+              <html>
+                <head>
+                  <meta http-equiv="refresh" content="0; url=https://cyber-trends-static-assets-dev-007536ca.s3.us-west-2.amazonaws.com/index.html">
+                </head>
+                <body>
+                  <p>Redirecting to Cyber Security Trends...</p>
+                </body>
+              </html>
+              EOL
               
-              # Download index.html from S3
-              aws s3 cp s3://${aws_s3_bucket.static_assets.bucket}/index.html /var/www/html/index.html
-              
-              # Set proper permissions
+              # Set permissions
               chown -R apache:apache /var/www/html
               chmod -R 755 /var/www/html
-              
-              # Restart httpd to apply changes
-              systemctl restart httpd
               EOF
   )
 
