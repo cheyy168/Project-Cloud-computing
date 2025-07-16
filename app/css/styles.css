@@ -154,22 +154,32 @@ footer {
     margin-bottom: 1rem;
 }
 
+/* Trend List Styles */
 .trend-list {
     margin-bottom: 3rem;
 }
 
 .trend-item {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.trend-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
 .trend-item h3 {
     color: var(--secondary-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.3rem;
 }
 
-/* New Section Styles */
+/* Section Styles */
 .section {
     margin: 3rem 0;
     padding: 2rem 0;
@@ -362,6 +372,7 @@ footer {
         font-size: 1.5rem;
     }
 
+    .trend-item,
     .industry-item,
     .challenge-item,
     .practical-item,
