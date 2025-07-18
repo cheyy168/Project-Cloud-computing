@@ -64,3 +64,4 @@ resource "aws_route_table_association" "public" {
     aws_route_table.public
   ]
 }
+

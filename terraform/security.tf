@@ -90,3 +90,4 @@ resource "aws_iam_instance_profile" "ec2" {
     Name = "${var.project_name}-ec2-profile"
   })
 }
+

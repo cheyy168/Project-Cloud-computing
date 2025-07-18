@@ -50,3 +50,40 @@ resource "aws_autoscaling_attachment" "web" {
   autoscaling_group_name = aws_autoscaling_group.web.name
   lb_target_group_arn    = aws_lb_target_group.web.arn
 }
+
+
+resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  alarm_name          = "${var.project_name}-high-cpu"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  threshold           = "70"  # Scale out if CPU > 70%
+  dimensions = { AutoScalingGroupName = aws_autoscaling_group.web.name }
+  alarm_actions = [aws_autoscaling_policy.scale_out.arn]
+}
+
+resource "aws_autoscaling_policy" "scale_out" {
+  name                   = "${var.project_name}-scale-out"
+  scaling_adjustment     = 1  # Add 1 instance
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.web.name
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu" {
+  alarm_name          = "${var.project_name}-low-cpu"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  threshold           = "30"  # Scale in if CPU < 30%
+  dimensions = { AutoScalingGroupName = aws_autoscaling_group.web.name }
+  alarm_actions = [aws_autoscaling_policy.scale_in.arn]
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  name                   = "${var.project_name}-scale-in"
+  scaling_adjustment     = -1  # Remove 1 instance
+  adjustment_type        = "ChangeInCapacity"
+  autoscaling_group_name = aws_autoscaling_group.web.name
+}
+
+terraform init
